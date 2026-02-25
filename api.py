@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from database import crear_tablas
 from usuarios import crear_usuario
 from entrenamientos import crear_entrenamiento
+from usuarios import crear_usuario, login
 
 app = FastAPI()
 
@@ -27,3 +28,12 @@ def api_crear_entrenamiento(
     peso: float
 ):
     return crear_entrenamiento(usuario_id, ejercicio, series, reps, peso)
+
+@app.post("/registro/")
+def api_registro(nombre: str, edad: int, password: str):
+    return crear_usuario(nombre, edad, password)
+
+
+@app.post("/login/")
+def api_login(nombre: str, password: str):
+    return login(nombre, password)

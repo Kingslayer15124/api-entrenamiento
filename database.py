@@ -13,7 +13,8 @@ def crear_tablas():
         CREATE TABLE IF NOT EXISTS usuarios (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             nombre TEXT NOT NULL,
-            edad INTEGER NOT NULL
+            edad INTEGER NOT NULL,
+            password TEXT NOT NULL
         )
     """)
 
