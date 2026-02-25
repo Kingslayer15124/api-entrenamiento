@@ -13,12 +13,6 @@ crear_tablas()
 def root():
     return {"mensaje": "API Entrenamiento funcionando"}
 
-
-@app.post("/usuarios/")
-def api_crear_usuario(nombre: str, edad: int):
-    return crear_usuario(nombre, edad)
-
-
 @app.post("/entrenamientos/")
 def api_crear_entrenamiento(
     usuario_id: int,
