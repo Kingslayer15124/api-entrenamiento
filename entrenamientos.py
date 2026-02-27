@@ -1,35 +1,16 @@
-from database import conectar
-from datetime import datetime
+from database import entrenamientos_db
 
 
-def crear_entrenamiento_autenticado(nombre_usuario, ejercicio, series, reps, peso):
+def crear_entrenamiento(nombre_usuario, descripcion):
+    nuevo_entrenamiento = {
+        "usuario": nombre_usuario,
+        "descripcion": descripcion
+    }
 
-    conexion = conectar()
-    cursor = conexion.cursor()
+    entrenamientos_db.append(nuevo_entrenamiento)
 
-    # Obtener ID del usuario a partir del nombre
-    cursor.execute(
-        "SELECT id FROM usuarios WHERE nombre = ?",
-        (nombre_usuario,)
-    )
+    return {"mensaje": "Entrenamiento creado"}
 
-    resultado = cursor.fetchone()
 
-    if resultado is None:
-        conexion.close()
-        return {"error": "Usuario no encontrado"}
-
-    usuario_id = resultado[0]
-
-    fecha = datetime.now().strftime("%Y-%m-%d %H:%M")
-
-    cursor.execute("""
-        INSERT INTO entrenamientos
-        (usuario_id, ejercicio, series, reps, peso, fecha)
-        VALUES (?, ?, ?, ?, ?, ?)
-    """, (usuario_id, ejercicio, series, reps, peso, fecha))
-
-    conexion.commit()
-    conexion.close()
-
-    return {"mensaje": "Entrenamiento registrado correctamente"}
+def obtener_entrenamientos():
+    return entrenamientos_db

@@ -1,5 +1,7 @@
 import sqlite3
 
+usuarios_db = []
+entrenamientos_db = []
 
 def conectar():
     conexion = sqlite3.connect("entrenamiento.db")

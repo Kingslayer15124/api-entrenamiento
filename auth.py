@@ -1,38 +1,32 @@
-from datetime import datetime, timedelta
+from passlib.context import CryptContext
 from jose import JWTError, jwt
-from fastapi import HTTPException, status, Depends
-from fastapi.security import OAuth2PasswordBearer
+from datetime import datetime, timedelta
 
-SECRET_KEY = "supersecretkey"
+SECRET_KEY = "supersecreto"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
-def crear_token(data: dict):
+def hash_password(password: str):
+    return pwd_context.hash(password)
+
+
+def verify_password(password: str, hashed_password: str):
+    return pwd_context.verify(password, hashed_password)
+
+
+def create_access_token(data: dict):
     to_encode = data.copy()
     expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
-    return encoded_jwt
+    return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
 
-def verificar_token(token: str = Depends(oauth2_scheme)):
+def verify_token(token: str):
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        nombre: str = payload.get("sub")
-
-        if nombre is None:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Token inválido",
-            )
-
-        return nombre
-
+        return payload
     except JWTError:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Token inválido",
-        )
+        return None

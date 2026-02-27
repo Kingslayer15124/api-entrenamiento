@@ -1,48 +1,39 @@
-from database import conectar
-from passlib.context import CryptContext
-from auth import crear_token
-
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+from database import usuarios_db
+from auth import hash_password, verify_password
 
 
 def crear_usuario(nombre, edad, password):
+    for usuario in usuarios_db:
+        if usuario["nombre"] == nombre:
+            return {"error": "El usuario ya existe"}
 
-    conexion = conectar()
-    cursor = conexion.cursor()
+    password_hash = hash_password(password)
 
-    password_hash = pwd_context.hash(password)
+    nuevo_usuario = {
+        "nombre": nombre,
+        "edad": edad,
+        "password": password_hash
+    }
 
-    cursor.execute(
-        "INSERT INTO usuarios (nombre, edad, password) VALUES (?, ?, ?)",
-        (nombre, edad, password_hash)
-    )
-
-    conexion.commit()
-    conexion.close()
+    usuarios_db.append(nuevo_usuario)
 
     return {"mensaje": "Usuario creado correctamente"}
 
 
-def login(nombre, password):
+def buscar_usuario(nombre):
+    for usuario in usuarios_db:
+        if usuario["nombre"] == nombre:
+            return usuario
+    return None
 
-    conexion = conectar()
-    cursor = conexion.cursor()
 
-    cursor.execute(
-        "SELECT password FROM usuarios WHERE nombre = ?",
-        (nombre,)
-    )
+def autenticar_usuario(nombre, password):
+    usuario = buscar_usuario(nombre)
 
-    resultado = cursor.fetchone()
-    conexion.close()
+    if not usuario:
+        return None
 
-    if resultado is None:
-        return {"error": "Usuario no encontrado"}
+    if not verify_password(password, usuario["password"]):
+        return None
 
-    password_guardada = resultado[0]
-
-    if pwd_context.verify(password, password_guardada):
-        access_token = crear_token(data={"sub": nombre})
-        return {"access_token": access_token, "token_type": "bearer"}
-    else:
-        return {"error": "Contraseña incorrecta"}
+    return usuario
