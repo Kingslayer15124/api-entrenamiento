@@ -1,23 +1,16 @@
 from database import conectar
-import bcrypt
+from passlib.context import CryptContext
+from auth import crear_token
 
-def hash_password(password: str):
-    salt = bcrypt.gensalt()
-    hashed = bcrypt.hashpw(password.encode('utf-8'), salt)
-    return hashed.decode('utf-8')
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-def verificar_password(password: str, hashed: str):
-    return bcrypt.checkpw(
-        password.encode('utf-8'),
-        hashed.encode('utf-8')
-    )
 
 def crear_usuario(nombre, edad, password):
 
     conexion = conectar()
     cursor = conexion.cursor()
 
-    password_hash = hash_password(password)
+    password_hash = pwd_context.hash(password)
 
     cursor.execute(
         "INSERT INTO usuarios (nombre, edad, password) VALUES (?, ?, ?)",
@@ -28,6 +21,7 @@ def crear_usuario(nombre, edad, password):
     conexion.close()
 
     return {"mensaje": "Usuario creado correctamente"}
+
 
 def login(nombre, password):
 
@@ -40,7 +34,6 @@ def login(nombre, password):
     )
 
     resultado = cursor.fetchone()
-
     conexion.close()
 
     if resultado is None:
@@ -48,7 +41,8 @@ def login(nombre, password):
 
     password_guardada = resultado[0]
 
-    if verificar_password(password, password_guardada):
-        return {"mensaje": "Login exitoso"}
+    if pwd_context.verify(password, password_guardada):
+        access_token = crear_token(data={"sub": nombre})
+        return {"access_token": access_token, "token_type": "bearer"}
     else:
         return {"error": "Contraseña incorrecta"}

@@ -1,8 +1,8 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 from database import crear_tablas
-from usuarios import crear_usuario
-from entrenamientos import crear_entrenamiento
 from usuarios import crear_usuario, login
+from entrenamientos import crear_entrenamiento
+from auth import verificar_token
 
 app = FastAPI()
 
@@ -11,17 +11,8 @@ crear_tablas()
 
 @app.get("/")
 def root():
-    return {"mensaje": "API Entrenamiento funcionando"}
+    return {"mensaje": "API funcionando correctamente"}
 
-@app.post("/entrenamientos/")
-def api_crear_entrenamiento(
-    usuario_id: int,
-    ejercicio: str,
-    series: int,
-    reps: int,
-    peso: float
-):
-    return crear_entrenamiento(usuario_id, ejercicio, series, reps, peso)
 
 @app.post("/registro/")
 def api_registro(nombre: str, edad: int, password: str):
@@ -31,3 +22,20 @@ def api_registro(nombre: str, edad: int, password: str):
 @app.post("/login/")
 def api_login(nombre: str, password: str):
     return login(nombre, password)
+
+
+@app.get("/protegido/")
+def ruta_protegida(usuario: str = Depends(verificar_token)):
+    return {"mensaje": f"Hola {usuario}, estás autenticado"}
+
+
+@app.post("/entrenamientos/")
+def api_crear_entrenamiento(
+    usuario_id: int,
+    ejercicio: str,
+    series: int,
+    reps: int,
+    peso: float,
+    usuario: str = Depends(verificar_token)
+):
+    return crear_entrenamiento(usuario_id, ejercicio, series, reps, peso)

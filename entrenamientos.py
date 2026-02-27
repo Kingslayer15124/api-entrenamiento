@@ -1,6 +1,7 @@
 from database import conectar
 from datetime import datetime
 
+
 def crear_entrenamiento(usuario_id, ejercicio, series, reps, peso):
 
     conexion = conectar()
