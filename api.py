@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Depends
 from database import crear_tablas
 from usuarios import crear_usuario, login
-from entrenamientos import crear_entrenamiento
+from entrenamientos import crear_entrenamiento_autenticado
 from auth import verificar_token
 
 app = FastAPI()
@@ -31,11 +31,12 @@ def ruta_protegida(usuario: str = Depends(verificar_token)):
 
 @app.post("/entrenamientos/")
 def api_crear_entrenamiento(
-    usuario_id: int,
     ejercicio: str,
     series: int,
     reps: int,
     peso: float,
     usuario: str = Depends(verificar_token)
 ):
-    return crear_entrenamiento(usuario_id, ejercicio, series, reps, peso)
+    return crear_entrenamiento_autenticado(
+        usuario, ejercicio, series, reps, peso
+    )
